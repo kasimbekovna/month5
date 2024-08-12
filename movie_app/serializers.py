@@ -5,11 +5,12 @@ from rest_framework.exceptions import ValidationError
 class ReviewSerializer(serializers.ModelSerializer):
     class Meta:
         model = Review
-        fields = ['text', 'movie']
+        fields = ['text', 'stars', 'movie']
 
 
 class ReviewValidateSerializer(serializers.Serializer):
     text = serializers.CharField(min_length=1, max_length=100)
+    stars = serializers.IntegerField(min_value=1)
     movie = serializers.IntegerField(min_value=1, max_value=1000)
 
 
@@ -29,9 +30,14 @@ class DirectorValidateSerializer(serializers.Serializer):
 
 
 class MovieSerializer(serializers.ModelSerializer):
+    rating = serializers.ReadOnlyField()
+
+class MovieSerializer(serializers.ModelSerializer):
     class Meta:
         model = Movie
         fields = '__all__'
+        # fields = 'id title text category tags reviews'.split()
+        # depth = 1
 
 
 class MovieValidateSerializer(serializers.Serializer):
