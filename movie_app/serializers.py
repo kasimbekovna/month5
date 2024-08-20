@@ -2,16 +2,31 @@ from rest_framework import serializers
 from .models import Director, Movie, Review
 from rest_framework.exceptions import ValidationError
 
+
 class ReviewSerializer(serializers.ModelSerializer):
+    text = serializers.CharField(min_length=2, max_length=1000)
+    stars = serializers.IntegerField(min_value=1, max_value=5)
+    movie_id = serializers.IntegerField()
+
     class Meta:
         model = Review
-        fields = ['text', 'stars', 'movie']
+        fields = ['text', 'stars', 'movie_id']
+
+    def validate_movie_id(self, value):
+        if not Movie.objects.filter(id=value).exists():
+            raise ValidationError('Movie not found')
+        return value
 
 
 class ReviewValidateSerializer(serializers.Serializer):
     text = serializers.CharField(min_length=1, max_length=100)
-    stars = serializers.IntegerField(min_value=1)
+    stars = serializers.IntegerField(min_value=1, max_value=10)
     movie = serializers.IntegerField(min_value=1, max_value=1000)
+
+    def validate_movie(self, value):
+        if not Movie.objects.filter(id=value).exists():
+            raise ValidationError('Movie not found')
+        return value
 
 
 class DirectorSerializer(serializers.ModelSerializer):
@@ -22,52 +37,45 @@ class DirectorSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Director
-        fields = 'name movies_count'.split()
+        fields = [  'id', 'name', 'movies_count']
 
 
 class DirectorValidateSerializer(serializers.Serializer):
-    name = serializers.CharField(min_length=1, max_length=100)
+    name = serializers.CharField(min_length=2, max_length=100)
+
 
 
 class MovieSerializer(serializers.ModelSerializer):
     rating = serializers.ReadOnlyField()
 
-class MovieSerializer(serializers.ModelSerializer):
     class Meta:
         model = Movie
         fields = '__all__'
-        # fields = 'id title text category tags reviews'.split()
-        # depth = 1
 
 
 class MovieValidateSerializer(serializers.Serializer):
     title = serializers.CharField(min_length=5, max_length=100)
     description = serializers.CharField(required=False)
     duration = serializers.DurationField()
-    director = serializers.IntegerField(min_value=1, max_value=1000)
+    director_id = serializers.IntegerField()
 
-
-    def validate_director_id(self, director_id):
-        try:
-            Director.object.get(id=director_id)
-        except Director.DoesNotExist:
+    def validate_director_id(self, value):
+        if not Director.objects.filter(id=value).exists():
             raise ValidationError('Director not found')
-        return director_id
+        return value
 
 
 class MovieReviewsSerializer(serializers.ModelSerializer):
-    reviews = ReviewSerializer(many=True)
+    reviews = ReviewSerializer(many=True, read_only=True)
     average_rating = serializers.SerializerMethodField()
-
-    def get_average_rating(self, product):
-        reviews = product.reviews.all()
-        if reviews:
-            sum_reviews = sum(i.stars for i in reviews)
-            average = sum_reviews / len(reviews)
-            return average
-        return None
 
     class Meta:
         model = Movie
-        fields = 'title description duration director reviews average_rating'.split()
+        fields = ['title','description', 'duration', 'director', 'reviews']
 
+    def get_average_rating(self, obj):
+        reviews = obj.reviews.all()
+        if reviews.exists():
+            sum_reviews = sum(review.stars for review in reviews)
+            return sum_reviews / reviews.count()
+        return None
