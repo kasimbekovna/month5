@@ -15,23 +15,13 @@ class DirectorListAPIView(ListCreateAPIView):
     serializer_class = DirectorSerializer
 
     def post(self, request, *args, **kwargs):
-        validate_serializer = DirectorValidateSerializer(data=request.data)
-        validate_serializer.is_valid(raise_exception=True)
+        serializer = DirectorValidateSerializer(data=request.data)
+        if serializer.is_valid():
+            name = serializer.validated_data.get('name')
+            director = Director.objects.create(name=name)
+            return Response(data={'director_id': director.id, 'name': director.name}, status=status.HTTP_201_CREATED)
+        return Response(status=status.HTTP_400_BAD_REQUEST, data={'errors': serializer.errors})
 
-
-        serializer = self.get_serializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        self.perform_create(serializer)
-
-        headers = self.get_success_headers(serializer.data)
-        return Response(
-            {'director_id': serializer.data['id'], 'name': serializer.data['name']},
-            status=status.HTTP_201_CREATED,
-            headers=headers
-        )
-
-    def perform_create(self, serializer):
-        serializer.save()
 
 class DirectorItemAPIView(RetrieveUpdateDestroyAPIView):
     queryset = Director.objects.all()
@@ -45,18 +35,20 @@ class MovieListAPIView(ListCreateAPIView):
 
     def post(self, request, *args, **kwargs):
         serializer = MovieValidateSerializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        movie = self.queryset.create(**serializer.validated_data)
-        return Response(
-            {
-                'movie_id': movie.id,
-                'title': movie.title,
-                'description': movie.description,
-            },
-            status=status.HTTP_201_CREATED
+        if serializer.is_valid():
+            title = serializer.validated_data.get('title')
+            description = serializer.validated_data.get('description')
+            duration = serializer.validated_data.get('duration')
+            director_id = serializer.validated_data.get('director_id')
+            movie = Movie.objects.create(
+                title=title,
+                description=description,
+                duration=duration,
+                director_id=director_id,
             )
-        # return Response({'errors': serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
-
+            return Response(data={'movie_id': movie.id, 'title': movie.title, 'description': movie.description},
+                            status=status.HTTP_201_CREATED)
+        return Response(status=status.HTTP_400_BAD_REQUEST, data={'errors': serializer.errors})
 
 class MovieItemAPIView(RetrieveUpdateDestroyAPIView):
     queryset = Movie.objects.all()
@@ -80,17 +72,17 @@ class ReviewListAPIView(ListCreateAPIView):
     def post(self, request, *args, **kwargs):
         serializer = ReviewValidateSerializer(data=request.data)
         if serializer.is_valid():
-            review = serializer.save()
-            return Response(
-                {
-                    'movie_id': review.movie_id,
-                    'text': review.text,
-                    'stars': review.stars,
-                },
-                status=status.HTTP_201_CREATED
+            text = serializer.validated_data.get('text')
+            stars = serializer.validated_data.get('stars')
+            movie_id = serializer.validated_data.get('movie_id')
+            review = Review.objects.create(
+                text=text,
+                stars=stars,
+                movie_id=movie_id,
             )
-        return Response({'errors': serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
-
+            return Response(data={'movie_id': movie_id, 'text': review.text, 'stars': review.stars},
+                            status=status.HTTP_201_CREATED)
+        return Response(status=status.HTTP_400_BAD_REQUEST, data={'errors': serializer.errors})
 
 class ReviewItemAPIView(RetrieveUpdateDestroyAPIView):
     queryset = Review.objects.all()

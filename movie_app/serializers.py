@@ -6,7 +6,7 @@ from rest_framework.exceptions import ValidationError
 class ReviewSerializer(serializers.ModelSerializer):
     text = serializers.CharField(min_length=2, max_length=1000)
     stars = serializers.IntegerField(min_value=1, max_value=5)
-    movie_id = serializers.IntegerField()
+    movie_id = serializers.IntegerField(min_value=1, max_value=1000)
 
     class Meta:
         model = Review
@@ -57,16 +57,18 @@ class MovieValidateSerializer(serializers.Serializer):
     title = serializers.CharField(min_length=5, max_length=100)
     description = serializers.CharField(required=False)
     duration = serializers.DurationField()
-    director_id = serializers.IntegerField()
+    director_id = serializers.IntegerField(min_value=1, max_value=1000)
 
-    def validate_director_id(self, value):
-        if not Director.objects.filter(id=value).exists():
+    def validate_director_id(self, director_id):
+        try:
+            Director.object.get(id=director_id)
+        except Director.DoesNotExist:
             raise ValidationError('Director not found')
-        return value
+        return director_id
 
 
 class MovieReviewsSerializer(serializers.ModelSerializer):
-    reviews = ReviewSerializer(many=True, read_only=True)
+    reviews = ReviewSerializer(many=True)
     average_rating = serializers.SerializerMethodField()
 
     class Meta:
