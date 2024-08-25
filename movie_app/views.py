@@ -22,7 +22,6 @@ class DirectorListAPIView(ListCreateAPIView):
             return Response(data={'director_id': director.id, 'name': director.name}, status=status.HTTP_201_CREATED)
         return Response(status=status.HTTP_400_BAD_REQUEST, data={'errors': serializer.errors})
 
-
 class DirectorItemAPIView(RetrieveUpdateDestroyAPIView):
     queryset = Director.objects.all()
     serializer_class = DirectorSerializer
@@ -108,7 +107,7 @@ class ReviewItemAPIView(RetrieveUpdateDestroyAPIView):
 #             serializer.save()  # автоматически сохранит объект
 #             return Response(data=serializer.data, status=status.HTTP_201_CREATED)
 #         return Response(status=status.HTTP_400_BAD_REQUEST, data={'errors': serializer.errors})
-#
+
 #
 # @api_view(['GET', 'PUT', 'DELETE'])
 # def director_detail_api_view(request, id):
@@ -146,8 +145,8 @@ class ReviewItemAPIView(RetrieveUpdateDestroyAPIView):
 #             serializer.save()  # автоматически сохранит объект
 #             return Response(data=serializer.data, status=status.HTTP_201_CREATED)
 #         return Response(status=status.HTTP_400_BAD_REQUEST, data={'errors': serializer.errors})
-#
-#
+# #
+# #
 # @api_view(['GET', 'PUT', 'DELETE'])
 # def movie_detail_api_view(request, id):
 #     try:

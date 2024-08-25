@@ -11,7 +11,6 @@ class UserAuthSerializer(serializers.Serializer):
 
 class UserCreateSerializer(serializers.Serializer):
     username = serializers.CharField()
-    email = serializers.EmailField()
     password = serializers.CharField(write_only=True)
 
     def validate_username(self, username):
@@ -19,10 +18,6 @@ class UserCreateSerializer(serializers.Serializer):
             raise ValidationError('User already exists!')
         return username
 
-    def validate_email(self, email):
-        if User.objects.filter(email=email).exists():
-            raise ValidationError('Email already in use!')
-        return email
 
     def create(self, validated_data):
         user = User.objects.create_user(
