@@ -1,11 +1,9 @@
 ﻿from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import status
-from .serializers import (
-    DirectorSerializer, MovieSerializer, ReviewSerializer,
+from .serializers import ( DirectorSerializer, MovieSerializer, ReviewSerializer,
     MovieReviewsSerializer, MovieValidateSerializer,
-    DirectorValidateSerializer, ReviewValidateSerializer
-)
+    DirectorValidateSerializer, ReviewValidateSerializer)
 from .models import Director, Movie, Review
 from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView, ListAPIView
 
@@ -90,10 +88,7 @@ class ReviewItemAPIView(RetrieveUpdateDestroyAPIView):
 
 
 
-# class MovieListAPIView(generics.ListCreateAPIView):
-#     queryset = Movie.objects.all()
-#     serializer_class = MovieSerializer
-#
+
 # @api_view(['GET', 'POST'])
 # def director_list_api_view(request):
 #     if request.method == 'GET':
